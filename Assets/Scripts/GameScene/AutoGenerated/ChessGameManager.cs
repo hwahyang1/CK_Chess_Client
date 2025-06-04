@@ -1,6 +1,11 @@
+#if FALSE
+
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+
+using Chess_Client;
+using Chess_Client.GameScene.Pieces;
 
 public class ChessGameManager : MonoBehaviour
 {
@@ -12,12 +17,12 @@ public class ChessGameManager : MonoBehaviour
     public GameObject promotionPanel;
     public TextMeshProUGUI turnText;
 
-    private ChessPiece[] piecePositions = new ChessPiece[64];
+    private PieceBased[] piecePositions = new PieceBased[64];
     private List<GameObject> moveMarkers = new List<GameObject>();
-    private ChessPiece selectedPiece = null;
-    private Team currentTurn = Team.White;
+    private PieceBased selectedPiece = null;
+    private DefineTeam currentTurn = DefineTeam.White;
     private int promotionIndex = -1;
-    private Team promotionTeam;
+    private DefineTeam promotionTeam;
 
     void Start()
     {
@@ -32,20 +37,20 @@ public class ChessGameManager : MonoBehaviour
 
         for (int i = 0; i < 8; i++)
         {
-            CreatePiece(whitePrefabs[whiteLayout[i]], i, Team.White);
-            CreatePiece(whitePrefabs[5], i + 8, Team.White);
-            CreatePiece(blackPrefabs[5], i + 48, Team.Black);
-            CreatePiece(blackPrefabs[blackLayout[i]], i + 56, Team.Black);
+            CreatePiece(whitePrefabs[whiteLayout[i]], i, DefineTeam.White);
+            CreatePiece(whitePrefabs[5], i + 8, DefineTeam.White);
+            CreatePiece(blackPrefabs[5], i + 48, DefineTeam.Black);
+            CreatePiece(blackPrefabs[blackLayout[i]], i + 56, DefineTeam.Black);
         }
     }
 
-    void CreatePiece(GameObject prefab, int index, Team team)
+    void CreatePiece(GameObject prefab, int index, DefineTeam team)
     {
         GameObject obj = Instantiate(prefab, boardSquares[index].position, Quaternion.identity);
-        ChessPiece cp = obj.GetComponent<ChessPiece>();
-        cp.team = team;
-        cp.currentIndex = index;
-        piecePositions[index] = cp;
+        PieceBased cp = obj.GetComponent<PieceBased>();
+        cp.Team = team;
+        cp.CurrentIndex = index;
+        piecePositions[inde	x] = cp;
     }
 
     void Update()
@@ -64,8 +69,8 @@ public class ChessGameManager : MonoBehaviour
                     }
                 }
 
-                ChessPiece cp = hit.transform.GetComponent<ChessPiece>();
-                if (cp != null && cp.team == currentTurn)
+                PieceBased cp = hit.transform.GetComponent<PieceBased>();
+                if (cp != null && cp.Team == currentTurn)
                 {
                     SelectPiece(cp);
                 }
@@ -79,14 +84,14 @@ public class ChessGameManager : MonoBehaviour
         TryMoveSelectedPiece(index);
     }
 
-    public void SelectPiece(ChessPiece piece)
+    public void SelectPiece(PieceBased piece)
     {
-        if (piece == null || piece.team != currentTurn) return;
+        if (piece == null || piece.Team != currentTurn) return;
 
         selectedPiece = piece;
         ClearMoveMarkers();
 
-        List<int> moves = piece.GetLegalMoves(boardSquares, piecePositions);
+        List<int> moves = piece.GetAvailableMoves(boardSquares, piecePositions);
         foreach (int index in moves)
         {
             if (!SimulateMoveAndCheckSafety(piece, index)) continue;
@@ -107,7 +112,7 @@ public class ChessGameManager : MonoBehaviour
     {
         if (selectedPiece == null) return;
 
-        List<int> legalMoves = selectedPiece.GetLegalMoves(boardSquares, piecePositions);
+        List<int> legalMoves = selectedPiece.GetAvailableMoves(boardSquares, piecePositions);
         if (!legalMoves.Contains(index)) return;
         if (!SimulateMoveAndCheckSafety(selectedPiece, index)) return;
 
@@ -115,14 +120,14 @@ public class ChessGameManager : MonoBehaviour
         PromotePawnIfNeeded(selectedPiece);
     }
 
-    void MoveTo(ChessPiece piece, int index)
+    void MoveTo(PieceBased piece, int index)
     {
         if (piecePositions[index] != null)
             Destroy(piecePositions[index].gameObject);
 
-        piecePositions[piece.currentIndex] = null;
+        piecePositions[piece.CurrentIndex] = null;
         piecePositions[index] = piece;
-        piece.currentIndex = index;
+        piece.CurrentIndex = index;
 
         piece.transform.position = boardSquares[index].position;
         EndTurn();
@@ -130,7 +135,7 @@ public class ChessGameManager : MonoBehaviour
 
     public void EndTurn()
     {
-        currentTurn = (currentTurn == Team.White) ? Team.Black : Team.White;
+        currentTurn = (currentTurn == DefineTeam.White) ? DefineTeam.Black : DefineTeam.White;
         selectedPiece = null;
         turnText.text = $"{currentTurn} 턴";
         ClearMoveMarkers();
@@ -139,23 +144,23 @@ public class ChessGameManager : MonoBehaviour
 
     public void EvaluateGameState()
     {
-        Team enemyTeam = currentTurn;
-        Team friendlyTeam = (currentTurn == Team.White) ? Team.Black : Team.White;
+        DefineTeam enemyTeam = currentTurn;
+        DefineTeam friendlyTeam = (currentTurn == DefineTeam.White) ? DefineTeam.Black : DefineTeam.White;
 
-        ChessPiece king = FindKing(enemyTeam);
+        PieceBased king = FindKing(enemyTeam);
         if (king == null)
         {
             Debug.Log($"{friendlyTeam} 승리! (킹 없음)");
             return;
         }
 
-        bool inCheck = IsSquareUnderThreat(king.currentIndex, friendlyTeam);
+        bool inCheck = IsSquareUnderThreat(king.CurrentIndex, friendlyTeam);
         bool hasMoves = false;
 
-        foreach (ChessPiece piece in piecePositions)
+        foreach (PieceBased piece in piecePositions)
         {
-            if (piece == null || piece.team != enemyTeam) continue;
-            List<int> moves = piece.GetLegalMoves(boardSquares, piecePositions);
+            if (piece == null || piece.Team != enemyTeam) continue;
+            List<int> moves = piece.GetAvailableMoves(boardSquares, piecePositions);
             foreach (int move in moves)
             {
                 if (SimulateMoveAndCheckSafety(piece, move))
@@ -181,55 +186,55 @@ public class ChessGameManager : MonoBehaviour
         }
     }
 
-    public ChessPiece FindKing(Team team)
+    public PieceBased FindKing(DefineTeam team)
     {
-        foreach (ChessPiece piece in piecePositions)
+        foreach (PieceBased piece in piecePositions)
         {
-            if (piece != null && piece is KingPiece && piece.team == team)
+            if (piece != null && piece is KingPiece && piece.Team == team)
                 return piece;
         }
         return null;
     }
 
-    public bool IsSquareUnderThreat(int index, Team byTeam)
+    public bool IsSquareUnderThreat(int index, DefineTeam byTeam)
     {
-        foreach (ChessPiece piece in piecePositions)
+        foreach (PieceBased piece in piecePositions)
         {
-            if (piece == null || piece.team != byTeam) continue;
-            List<int> moves = piece.GetLegalMoves(boardSquares, piecePositions);
+            if (piece == null || piece.Team != byTeam) continue;
+            List<int> moves = piece.GetAvailableMoves(boardSquares, piecePositions);
             if (moves.Contains(index)) return true;
         }
         return false;
     }
 
-    public bool SimulateMoveAndCheckSafety(ChessPiece piece, int targetIndex)
+    public bool SimulateMoveAndCheckSafety(PieceBased piece, int targetIndex)
     {
-        int originalIndex = piece.currentIndex;
-        ChessPiece targetPiece = piecePositions[targetIndex];
+        int originalIndex = piece.CurrentIndex;
+        PieceBased targetPiece = piecePositions[targetIndex];
 
         piecePositions[originalIndex] = null;
         piecePositions[targetIndex] = piece;
-        piece.currentIndex = targetIndex;
+        piece.CurrentIndex = targetIndex;
 
-        ChessPiece king = FindKing(piece.team);
-        bool inCheck = IsSquareUnderThreat(king.currentIndex, (piece.team == Team.White) ? Team.Black : Team.White);
+        PieceBased king = FindKing(piece.Team);
+        bool inCheck = IsSquareUnderThreat(king.CurrentIndex, (piece.Team == DefineTeam.White) ? DefineTeam.Black : DefineTeam.White);
 
         piecePositions[originalIndex] = piece;
         piecePositions[targetIndex] = targetPiece;
-        piece.currentIndex = originalIndex;
+        piece.CurrentIndex = originalIndex;
 
         return !inCheck;
     }
 
-    public void PromotePawnIfNeeded(ChessPiece piece)
+    public void PromotePawnIfNeeded(PieceBased piece)
     {
         if (!(piece is PawnPiece)) return;
 
-        int row = piece.currentIndex / 8;
-        if ((piece.team == Team.White && row == 0) || (piece.team == Team.Black && row == 7))
+        int row = piece.CurrentIndex / 8;
+        if ((piece.Team == DefineTeam.White && row == 0) || (piece.Team == DefineTeam.Black && row == 7))
         {
-            promotionIndex = piece.currentIndex;
-            promotionTeam = piece.team;
+            promotionIndex = piece.CurrentIndex;
+            promotionTeam = piece.Team;
             promotionPanel.SetActive(true);
         }
     }
@@ -243,14 +248,15 @@ public class ChessGameManager : MonoBehaviour
     {
         Destroy(piecePositions[promotionIndex].gameObject);
 
-        GameObject prefab = (promotionTeam == Team.White) ? whitePrefabs[prefabIndex] : blackPrefabs[prefabIndex];
+        GameObject prefab = (promotionTeam == DefineTeam.White) ? whitePrefabs[prefabIndex] : blackPrefabs[prefabIndex];
         GameObject newPiece = Instantiate(prefab, boardSquares[promotionIndex].position, Quaternion.identity);
-        ChessPiece cp = newPiece.GetComponent<ChessPiece>();
-        cp.team = promotionTeam;
-        cp.currentIndex = promotionIndex;
+        PieceBased cp = newPiece.GetComponent<PieceBased>();
+        cp.Team = promotionTeam;
+        cp.CurrentIndex = promotionIndex;
         piecePositions[promotionIndex] = cp;
 
         promotionPanel.SetActive(false);
         EndTurn();
     }
 }
+#endif
