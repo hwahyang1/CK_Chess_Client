@@ -9,41 +9,45 @@ namespace Chess_Client.GameScene.Pieces
 {
 	public class PawnPiece : PieceBased
 	{
-	    public override List<int> GetAvailableMoves(Transform[] boardSquares, PieceBased[] piecePositions)
-	    {
-	        List<int> moves = new List<int>();
-	        int direction = (team == DefineTeam.White) ? -1 : 1;
-	        int row = currentIndex / 8;
-	        int col = currentIndex % 8;
+		public override List<int> GetAvailableMoves(Transform[] boardSquares, PieceBased[] piecePositions)
+		{
+			List<int> moves = new List<int>();
+			int direction = (team == DefineTeam.White) ? 8 : -8;
+			int startRow = (team == DefineTeam.White) ? 1 : 6;
+			int row = currentIndex / 8;
+			int col = currentIndex % 8;
 
-	        int forwardIndex = currentIndex + direction * 8;
-	        if (IsValid(forwardIndex) && piecePositions[forwardIndex] == null)
-	        {
-	            moves.Add(forwardIndex);
+			int forwardOne = currentIndex + direction;
+			if (IsValid(forwardOne) && piecePositions[forwardOne] == null)
+			{
+				moves.Add(forwardOne);
 
-	            int startRow = (team == DefineTeam.White) ? 6 : 1;
-	            if (row == startRow)
-	            {
-	                int doubleForward = currentIndex + direction * 16;
-	                if (IsValid(doubleForward) && piecePositions[doubleForward] == null)
-	                    moves.Add(doubleForward);
-	            }
-	        }
+				int forwardTwo = currentIndex + direction * 2;
+				if (row == startRow && piecePositions[forwardTwo] == null)
+				{
+					moves.Add(forwardTwo);
+				}
+			}
 
-	        int[] diag = { -1, 1 };
-	        foreach (int d in diag)
-	        {
-	            int newCol = col + d;
-	            if (newCol >= 0 && newCol < 8)
-	            {
-	                int diagIndex = currentIndex + direction * 8 + d;
-	                if (IsValid(diagIndex) && piecePositions[diagIndex] != null && piecePositions[diagIndex].Team != team)
-	                    moves.Add(diagIndex);
-	            }
-	        }
+			// diagonals
+			int[] diagonals = { direction - 1, direction + 1 };
+			foreach (int offset in diagonals)
+			{
+				int target = currentIndex + offset;
+				if (IsValid(target))
+				{
+					int targetCol = target % 8;
+					if (Mathf.Abs(targetCol - col) == 1 &&
+					    piecePositions[target] != null &&
+					    piecePositions[target].Team != team)
+					{
+						moves.Add(target);
+					}
+				}
+			}
 
-	        return moves;
-	    }
+			return moves;
+		}
 
 	    private bool IsValid(int index) => index >= 0 && index < 64;
 	}
