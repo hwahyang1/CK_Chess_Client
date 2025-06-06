@@ -4,7 +4,7 @@ namespace Chess_Client
 {
 	public enum DefineTeam
 	{
-		None,
+		None = -1,
 		White,
 		Black
 	}

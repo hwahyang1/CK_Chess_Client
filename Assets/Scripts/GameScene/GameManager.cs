@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+
 using UnityEngine;
 
 using NaughtyAttributes;
@@ -57,15 +58,15 @@ namespace Chess_Client.GameScene
 
 		private void SpawnAllPieces()
 		{
-			int[] whiteLayout = { 0, 1, 2, 3, 4, 2, 1, 0 };
-			int[] blackLayout = { 0, 1, 2, 3, 4, 2, 1, 0 };
+			DefinePieces[] whiteLayout = new DefinePieces[] { DefinePieces.Rook, DefinePieces.Knight, DefinePieces.Bishop, DefinePieces.Queen, DefinePieces.King, DefinePieces.Knight, DefinePieces.Rook };
+			DefinePieces[] blackLayout = new DefinePieces[] { DefinePieces.Rook, DefinePieces.Knight, DefinePieces.Bishop, DefinePieces.Queen, DefinePieces.King, DefinePieces.Knight, DefinePieces.Rook };
 
 			for (int i = 0; i < 8; i++)
 			{
-				CreatePiece(whitePrefabs[whiteLayout[i]], i, DefineTeam.White);
-				CreatePiece(whitePrefabs[5], i + 8, DefineTeam.White);
-				CreatePiece(blackPrefabs[5], i + 48, DefineTeam.Black);
-				CreatePiece(blackPrefabs[blackLayout[i]], i + 56, DefineTeam.Black);
+				CreatePiece(whitePrefabs[(int)whiteLayout[i]], i, DefineTeam.White);
+				CreatePiece(whitePrefabs[(int)DefinePieces.Pawn], i + 8, DefineTeam.White);
+				CreatePiece(blackPrefabs[(int)DefinePieces.Pawn], i + 48, DefineTeam.Black);
+				CreatePiece(blackPrefabs[(int)blackLayout[i]], i + 56, DefineTeam.Black);
 			}
 		}
 
