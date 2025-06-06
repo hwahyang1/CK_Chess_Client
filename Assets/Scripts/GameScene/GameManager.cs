@@ -58,8 +58,8 @@ namespace Chess_Client.GameScene
 
 		private void SpawnAllPieces()
 		{
-			DefinePieces[] whiteLayout = new DefinePieces[] { DefinePieces.Rook, DefinePieces.Knight, DefinePieces.Bishop, DefinePieces.Queen, DefinePieces.King, DefinePieces.Knight, DefinePieces.Rook };
-			DefinePieces[] blackLayout = new DefinePieces[] { DefinePieces.Rook, DefinePieces.Knight, DefinePieces.Bishop, DefinePieces.Queen, DefinePieces.King, DefinePieces.Knight, DefinePieces.Rook };
+			DefinePieces[] whiteLayout = new DefinePieces[] { DefinePieces.Rook, DefinePieces.Knight, DefinePieces.Bishop, DefinePieces.Queen, DefinePieces.King, DefinePieces.Bishop, DefinePieces.Knight, DefinePieces.Rook };
+			DefinePieces[] blackLayout = new DefinePieces[] { DefinePieces.Rook, DefinePieces.Knight, DefinePieces.Bishop, DefinePieces.Queen, DefinePieces.King, DefinePieces.Bishop, DefinePieces.Knight, DefinePieces.Rook };
 
 			for (int i = 0; i < 8; i++)
 			{
