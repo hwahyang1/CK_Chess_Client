@@ -39,7 +39,7 @@ namespace Chess_Client.GameScene
 		private DefineTeam currentTurn;
 		
 		[SerializeField, ReadOnly]
-		private PieceBased[] piecePositions = new PieceBased[64];
+		private PieceBased[] piecePositions = new PieceBased[64]; // TODO: PieceBased -> Block
 		
 		[SerializeField, ReadOnly]
 		private PieceBased selectedPiece;
