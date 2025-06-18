@@ -7,6 +7,7 @@ using UnityEngine;
 using NaughtyAttributes;
 
 using Chess_Client.GameScene.Pieces;
+using Chess_Client.Templates.Internal;
 
 namespace Chess_Client.GameScene
 {
